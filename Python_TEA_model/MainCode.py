@@ -7,7 +7,7 @@ import sys
 
 import user_inputs
 import initialization
-from solar_modules import solar_class
+from solar_class_update import solar_class
 
 
 # dynamicall add dependencies
