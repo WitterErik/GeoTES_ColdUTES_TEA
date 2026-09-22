@@ -37,3 +37,21 @@ def initialize_gtes_states():
     )
 
     return charge_production, charge_injection, discharge_production, discharge_injection
+
+def setup_environmental_paths():
+    """
+    Appends required subdirectories (Subsurface, utility, etc.) 
+    to sys.path so they can be imported inside main.py.
+    """
+    import sys
+    dependencies = [
+        user_inputs.base_dir / "Subsurface",
+        user_inputs.base_dir / "utility",
+        user_inputs.base_dir / "SAM",
+        user_inputs.base_dir / "data"
+    ]
+    for folder in dependencies:
+        if folder.exists() and str(folder) not in sys.path:
+            sys.path.append(str(folder))
+
+

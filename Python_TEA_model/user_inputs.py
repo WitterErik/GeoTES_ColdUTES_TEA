@@ -128,3 +128,50 @@ finance = {
     "onm": 0.015,          # Operations & maintenance fraction of total capital cost
     "itc": 0.4             # Investment tax credit
 }
+
+# ============================================
+# Wellfield, Exploration, and Piping Constants
+# ============================================
+exploration_specs = {
+    "field_type": "Greenfield",
+    "wells_count": 3,
+    "target_depth": 20000,
+    "cost_multiplier": 1.2
+}
+
+engineering = {
+    "flowline_length_m": 300,      # pipe meters per well
+    "piping_cost_usd_ft": 256.98,  # Piping unit cost
+    "m_to_ft": 3.28084,            # Unit conversion factor
+    "ppi_multiplier": 1.175,       # Legal/permitting inflation scaling
+    "base_permitting_cost": 1000000 # GETEM base permitting cost ($)
+}
+
+# ==========================================
+# Financial / Economic Inputs
+# ==========================================
+finance = {
+    "lifetime": 50,
+    "elec_price": 0.05,
+    "inflation": 0.025,
+    "irr": 0.10,
+    "debt_frac": 0.60,
+    "debt_ir": 0.08,
+    "tax_rate": 0.28,
+    "deprec": [0.20, 0.32, 0.20, 0.14, 0.14],
+    "annual_cost": [1.0, 0.0, 0.0],
+    "construc_ir": 0.0,
+    "onm_rate": 0.015,
+    "itc_rate": 0.4,
+    "property_tax_rate": 0.0075,
+}
+
+# LCOH Baselines / Comparison offsets
+finance_baseline_offsets = {
+    "lcoh_csp_offset": 923.49e6,
+    "lcoh_om_offset": 13.85e6,
+    "lcoh_sub_cap_offset": 95.42e6,
+    "lcoh_sub_om_offset": 2.80e6,
+    "lcoh_ein_offset": 62.5886,
+}
+}
