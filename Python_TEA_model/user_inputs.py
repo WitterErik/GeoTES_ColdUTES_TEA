@@ -174,4 +174,3 @@ finance_baseline_offsets = {
     "lcoh_sub_om_offset": 2.80e6,
     "lcoh_ein_offset": 62.5886,
 }
-}

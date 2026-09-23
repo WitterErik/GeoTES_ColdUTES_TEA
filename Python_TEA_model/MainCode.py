@@ -27,10 +27,10 @@ for folder in dependencies:
 # e.g. from subsurface_model import solve_geothermal_flow
 
 try:
-    from thermo_cycle import thermo_cycle_class
-    from geo_tes import geoTES_class
-    from economics import economics_class
-    from fluid_properties import calc_fluid_props
+    from thermo_cycle_class_update import thermo_cycle_class
+    from geoTES_class_update import geoTES_class
+    from economic_class_update import economics_class
+    from fluid_class_update import calc_fluid_props
     from external_models import call_SAM
     from interpolation import interpolate_off_design
     from subsurface import (
