@@ -43,6 +43,14 @@ def call_SAM(CSP, PC):
     ssccall('data_set_number', data, 'specified_solar_multiple', SM)
     ssccall('data_set_number', data, 'non_solar_field_land_area_multiplier', CSP.land_mult)
 
+    # T_startup/T_shutdown are never left at the 'Commercial' preset default
+    # (325.34 C): if that default exceeds T_loop_out_des, the field can never
+    # satisfy its own startup/shutdown criterion and the defocus solver fails
+    # with "COMPONENT defocus failed" regardless of field size or solar multiple.
+    T_startup = CSP.Tmin + 0.7 * (CSP.Tmax - CSP.Tmin)
+    ssccall('data_set_number', data, 'T_startup', T_startup)
+    ssccall('data_set_number', data, 'T_shutdown', T_startup)
+
     nSCA = 4
     aperture_SCA = 656.0
     length_SCA = 115.0
@@ -75,6 +83,9 @@ def call_SAM(CSP, PC):
     Qloss_per_loop = HCE_heat_loss * length_SCA * nSCA
     nloops = int(np.ceil(PC.Qin0 * SM * 1e6 / (Q_per_loop - Qloss_per_loop)))
 
+    # 'track_mode' and 'nSCA' have no matching PySAM TroughPhysicalIph input attribute
+    # (nSCA is derived from 'trough_loop_control' and is output-only) -- these two
+    # data_set_number calls are silently dropped by _set_pysam_inputs.
     ssccall('data_set_number', data, 'track_mode', 1)
     ssccall('data_set_number', data, 'tilt', 0)
     ssccall('data_set_number', data, 'azimuth', 0)
@@ -82,6 +93,9 @@ def call_SAM(CSP, PC):
     ssccall('data_set_number', data, 'nHCEt', nSCA)
     ssccall('data_set_number', data, 'nColt', nSCA)
     ssccall('data_set_number', data, 'nHCEVar', nSCA)
+    # 'nLoops' is output-only in PySAM TroughPhysicalIph; field sizing is actually
+    # controlled by 'specified_solar_multiple' + 'use_solar_mult_or_aperture_area'
+    # (default use_solar_mult_or_aperture_area=0 -> solar-multiple-based sizing).
     ssccall('data_set_number', data, 'nLoops', nloops)
     ssccall('data_set_number', data, 'eta_pump', 0.85)
     ssccall('data_set_number', data, 'HDR_rough', 4.57e-05)
@@ -452,7 +466,10 @@ def call_SAM(CSP, PC):
     ssccall('data_set_number', data, 'tanks_in_parallel', 1)
     ssccall('data_set_array', data, 'trough_loop_control', np.array([4.0, 1.0, 1.0, 4.0, 1.0, 1.0, 3.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0], dtype=np.float64))
     ssccall('data_set_number', data, 'disp_wlim_maxspec', 9.9999999999999998e37)
-    ssccall('data_set_number', data, 'adjust:constant', 4)
+    # PySAM 7.x renamed 'adjust:constant' -> 'adjust_constant' (colon replaced with
+    # underscore after SAM 2022.12.21); the old key name is silently dropped by
+    # _set_pysam_inputs since no matching attribute exists.
+    ssccall('data_set_number', data, 'adjust_constant', 4)
 
     module = ssccall('module_create', 'trough_physical_process_heat')
     ok = ssccall('module_exec', module, data)
