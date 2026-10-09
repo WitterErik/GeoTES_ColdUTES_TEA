@@ -13,13 +13,13 @@ class economics_class:
         self.inflation = inputs.get("inflation", 0.025)
         self.irr = inputs.get("irr", 0.10)
         self.debt_frac = inputs.get("debt_frac", 0.60)
-        self.debt_IR = inputs.get("debt_ir", 0.08)  # Accommodates both capitalizations
+        self.debt_IR = inputs.get("debt_ir", inputs.get("debt_IR", 0.08))
         self.tax_rate = inputs.get("tax_rate", 0.28)
         self.deprec = inputs.get("deprec", [0.20, 0.32, 0.20, 0.14, 0.14])
         self.annual_cost = inputs.get("annual_cost", [1.0, 0.0, 0.0])
-        self.construc_IR = inputs.get("construc_ir", 0.0)
-        self.OnM = inputs.get("onm_rate", inputs.get("OnM", 0.015))  # Accommodates both capitalizations
-        self.ITC = inputs.get("itc_rate", inputs.get("ITC", 0.4))
+        self.construc_IR = inputs.get("construc_ir", inputs.get("construc_IR", 0.0))
+        self.OnM = inputs.get("onm_rate", inputs.get("onm", inputs.get("OnM", 0.015)))
+        self.ITC = inputs.get("itc_rate", inputs.get("itc", inputs.get("ITC", 0.4)))
 
         # 2. Initialize internal parameter tracking properties
         self.RROE = 0.0
@@ -91,6 +91,7 @@ class economics_class:
 
         # Overall Fixed Charge Rate (FCR)
         self.FCR = self.CRF * self.PFF * self.CFF
+        return self
 
     def calc_levelized_cost(self, mode):
         """
@@ -128,6 +129,9 @@ class economics_class:
         elif mode == 'H':
             self.LCOH = (capital_charge_base + self.OnM_total + self.elec_cost) / denominator
             self.LCOH_ITC = (capital_charge_itc + self.OnM_total + self.elec_cost) / denominator
+        else:
+            raise ValueError(f"Unsupported levelized-cost mode: {mode}")
+        return self
 
     def calc_revenue(self, Win, Wout):
         """

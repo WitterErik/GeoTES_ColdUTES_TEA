@@ -1,25 +1,26 @@
 import numpy as np 
 
 class solar_class:
-    def __init__(self,location, mirror_type, nominal_DNI, solar_multiple, Tmax, Tmin, land_mult, CSP_cost, nY)
-        self.locaiton = location
+    def __init__(self, location, mirror_type, nominal_DNI, solar_multiple, initial_size, Tmax, Tmin, land_mult, CSP_cost, nY=2):
+        self.location = location
         self.mirror_type = mirror_type
-        self.nominal_DNI = nominal_DNI
-        self.solar_multiple = solar_multiple
-        self.Tmax = Tmax
-        self.Tmin = Tmin
-        self.land_mult = land_mult
-        self.nY = nY
+        self.nominal_DNI = float(nominal_DNI)
+        self.solar_multiple = float(solar_multiple)
+        self.initial_size = float(initial_size)
+        self.Tmax = float(Tmax)
+        self.Tmin = float(Tmin)
+        self.land_mult = float(land_mult)
+        self.nY = int(nY)
 
         # pre-allocate tracking arrays
         self.DNI = np.zeros(8760)
-        self.power = np.zeros(ny * 8760)
-        self.dumped = np.zeros(nY * 8760)
+        self.power = np.zeros(self.nY * 8760)
+        self.dumped = np.zeros(self.nY * 8760)
 
         # pull in cost profiles from user_inputs
         self.mirror_cost_unit = CSP_cost["mirror"]
         self.land_cost_unit = CSP_cost["land"]
-        self.HX_cost_unit = CSP_cost["HX"]
+        self.HX_cost_unit = CSP_cost.get("HX", CSP_cost.get("hx", 0.0))
 
         # initialize empty variables that are calculated dynamically
         self.mirror_cost = 0.0
@@ -36,27 +37,21 @@ class solar_class:
         self.solar_thermal_generated = 0.0    # GWh-th
         self.total_dumped = 0.0               # GWh-th
 
-        def CSP_annual_energy(self):
-            # calculate annual solar thermal energy generated and dumped for final year
-            start_hour = (self.nY - 1) * 8760
-            end_hour = self.nY * 8760
+    def CSP_annual_energy(self):
+        start_hour = (self.nY - 1) * 8760
+        end_hour = self.nY * 8760
 
-            # calculate thermal energy balances
-            self.available_solar_heat = np.sum(self.DNI) * self.mirror_aperture / 1e9
+        self.available_solar_heat = np.sum(self.DNI) * self.mirror_aperture / 1e9
 
-            # slice the array for the final year and sum the values
-            final_year_power = self.power[start_hour:end_hour]
-            self.solar_thermal_generated = np.sum(final_year_power) / 1000
+        self.solar_thermal_generated = np.sum(self.power[start_hour:end_hour]) / 1000.0
 
-            final_year_dumped = self.dumped[start_hour:end_hour]
-            self.total_dumped = np.zum(final_year_dumped) / 1000
+        self.total_dumped = np.sum(self.dumped[start_hour:end_hour]) / 1000.0
+        return self
 
-        def calc_CSP_cost(self,PC):
-            # calculate captial expenditures of solar collector
-
-            self.mirror_cost = self.mirror_cost_unit * self.mirror_aperture
-            self.land_cost = self.land_cost_unit * self.land_area
-            self.HX_cost = self.HX_cost_unit * PC.Qin0 * 1000
-        
-            self.total_cost = self.mirror_cost + self.land_cost + self.HX_cost
+    def calc_CSP_cost(self, PC):
+        self.mirror_cost = self.mirror_cost_unit * self.mirror_aperture
+        self.land_cost = self.land_cost_unit * self.land_area
+        self.HX_cost = self.HX_cost_unit * PC.Qin0 * 1000.0
+        self.total_cost = self.mirror_cost + self.land_cost + self.HX_cost
+        return self
             

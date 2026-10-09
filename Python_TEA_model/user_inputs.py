@@ -3,7 +3,7 @@
 from pathlib import Path
 
 base_dir = Path(__file__).resolve().parent
-subsurface_dir = base_dir / "Subsurface"
+subsurface_dir = base_dir / "Subsurface TEA Model"
 utility_dir = base_dir / "utility"
 SAM_dir = base_dir / "SAM"
 data_dir = base_dir / "data"
@@ -14,7 +14,7 @@ output_dir = base_dir / "Outputs"
 # system and simulation parameters
 # ==========================================
 system = {
-    "location": "Antelope Hills, CA",
+    "location": "Antelope Hills CA",
     "nY": 2,                 # number of years to run simulation
     "save_figs": True,      # true to save plots
 }
@@ -27,8 +27,9 @@ jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec = 31, 28, 31, 30, 31,
 
 # Seasonal simulation phases (start and end hours)
 phases = {
-    "phase1":[1, (jan + feb + mar) * 24 + 1],
-    "phase2": [1,(jan + feb + mar)*24+1, (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1],
+    "phase1": [1, (jan + feb + mar) * 24 + 1],
+    "phase2": [(jan + feb + mar) * 24 + 1,
+               (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1],
     "phase3": [
         ((jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1),
         (jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec) * 24 + 1
@@ -37,9 +38,9 @@ phases = {
 
 # daily operating hours of interest
 operating_hours = {
-    "op_hour1": list(range(17, 23)),
-    "op_hour2": list(range(17, 23)),
-    "op_hour3": list(range(17, 23))
+    "op_hour1": list(range(17, 25)),
+    "op_hour2": list(range(17, 24)),
+    "op_hour3": list(range(17, 24))
 }
 
 # ==========================================
@@ -49,6 +50,7 @@ csp_specs = {
     "mirror_type": "Parabolic trough",
     "nominal_dni": 950,          # Nominal Direct Normal Irradiance, W/m2
     "solar_multiple": 2.5,
+    "initial_size": 100,
     "csp_tmax": 250,             # Max temperature, C
     "csp_tmin": 100,             # Min temperature, C
     "csp_land_mult": 1.1,
@@ -58,7 +60,7 @@ csp_specs = {
 csp_costs = {
     "mirror": 105,               # Mirror cost, $/m2
     "land": 20,                  # Site improvements, $/m2
-    "hx": 250                    # Heat exchanger to high-temp TES, $/kWh-th
+    "HX": 250                    # Heat exchanger to high-temp TES, $/kWh-th
 }
 
 # ==========================================
@@ -90,10 +92,12 @@ reversible_wells = False        # Are charge production wells used as discharge 
 gtes_settings = {
     "recovery" : 0.95 ,           # Fraction of input thermal energy that is recovered
     "Tinit" : 50,                 # Initial reservoir temperature, C
-    "Qmax" : 920.63,              # Maximum charging power input, MWh-th"
+    "Qmax" : 920.63 + 3 * 200,    # Maximum charging power input, MWh-th
     "fluid" : 'water',            # type of fluid
-    "mode": "separate"            # three modes, separate, continuous, push-pull   
+    "mode": "continuous"          # separate, continuous, or push-pull
 }
+
+qload = 200.0  # Thermal load, MW-th
 
 # define the production and injection flow rates in L/s
 gtes_flowrate = {

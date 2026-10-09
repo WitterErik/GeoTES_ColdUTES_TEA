@@ -9,7 +9,7 @@ class thermo_cycle_class:
     def __init__(self,PC_type, PC_design, PC_foff, PC_cost, nY):
         self.type = PC_type
         self.nY = nY 
-        self.fname = PC_foff 
+        self.fname = str(PC_foff)
 
         # default property initialization
         self.Wout0 = 0.0

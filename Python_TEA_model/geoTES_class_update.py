@@ -1,7 +1,7 @@
 import numpy as np
 
 class geoTES_class:
-    def __init__(self, recovery, Tinit, flowrate, Qmax, props, fluid, mode, nY)
+    def __init__(self, recovery, Tinit, flowrate, Qmax, props, fluid, mode, nY):
 
         self.recovery = recovery
         self.Tinit = Tinit
@@ -11,8 +11,8 @@ class geoTES_class:
 
         # flow rate parsing
         if isinstance(flowrate, dict):
-            self.flowrate_per_well_inj = flowrate.get("I",0.0)
-            self.flowrate_per_well_prod = flowrate.get("P",0.0)
+            self.flowrate_per_well_inj = float(flowrate.get("injection", flowrate.get("I", 0.0)))
+            self.flowrate_per_well_prod = float(flowrate.get("production", flowrate.get("P", 0.0)))
         else:
             self.flowrate_per_well_inj = flowrate
             self.flowrate_per_well_prod = flowrate
@@ -21,7 +21,7 @@ class geoTES_class:
         self.cp = props.get("cp", 0.0)
         self.void = props.get("void", 0.0)
         self.depth = props.get("depth",0.0)
-        self.thickness = props.get("thickeness",0.0)
+        self.thickness = props.get("thickness", 0.0)
 
         # injectivity and productivity properties
         self.productivity = props.get("productivity",0.0)
@@ -29,7 +29,7 @@ class geoTES_class:
 
         # dynamic boundaries and working fluid classes
         try:
-            from fluid_properties import fluid_class
+            from fluid_class_update import fluid_class
             self.charge_production = fluid_class(fluid)
             self.charge_injection = fluid_class(fluid)
             self.discharge_production = fluid_class(fluid)
@@ -116,7 +116,7 @@ class geoTES_class:
 
         # Import property calculator helper
         try:
-            from fluid_properties import calc_mdot_vdot
+            from fluid_class_update import calc_mdot_vdot
         except ImportError:
             # Fallback helper function in case it is not located yet
             def calc_mdot_vdot(fluid, mode):
