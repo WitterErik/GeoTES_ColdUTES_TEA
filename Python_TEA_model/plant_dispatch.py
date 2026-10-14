@@ -44,7 +44,9 @@ def run_dispatch(plant):
     for i in range(1, total_hours):
         geotes.energy[i] = geotes.energy[i - 1]
         hour = (i % 24) + 1
-        hour_of_year = (i % 8760) + 1
+        # Match the reference script: seasonal boundaries use the full-run hour,
+        # so years after the first remain in phase 3.
+        hour_of_year = i + 1
 
         if user_inputs.phases["phase1"][0] <= hour_of_year < user_inputs.phases["phase1"][1]:
             operates_power_cycle = hour in user_inputs.operating_hours["op_hour1"]

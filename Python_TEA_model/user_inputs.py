@@ -27,12 +27,12 @@ jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec = 31, 28, 31, 30, 31,
 
 # Seasonal simulation phases (start and end hours)
 phases = {
-    "phase1": [1, (jan + feb + mar) * 24 + 1],
-    "phase2": [(jan + feb + mar) * 24 + 1,
-               (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1],
+    "phase1": [0, (jan + feb + mar) * 24],
+    "phase2": [(jan + feb + mar) * 24,
+               (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24],
     "phase3": [
-        ((jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1),
-        (jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec) * 24 + 1
+        ((jan + feb + mar + apr + may + jun + jul + aug + sep) * 24),
+        (jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec) * 24
     ]
 }
 
@@ -75,13 +75,12 @@ ltpc_design = {
     "fan": 0.1
 }
 
-# Use PATHLIB to safely resolve the excel file location dynamically on Windows or Linux
+# Use PATHLIB to safely resolve the excel file location 
 ltpc_foff = data_dir / "example_off_design.xlsx" 
 
 ltpc_costs = {
     "power_block": 750,  # power block, $/kW-e
     "HX": 250,           # heat exchanger between TES and power block, $/kWh-th
-    "fan": 500           # air fan cost, $/kW-e
 }
 
 # ==========================================
