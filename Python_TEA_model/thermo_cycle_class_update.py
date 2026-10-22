@@ -36,7 +36,7 @@ class thermo_cycle_class:
         if self.type == 'HE':
             self.Wout0 = PC_design.get("Wout", 0.0)
             self.Tamb0 = T0
-            self.Qrej0 = Qrej
+            #self.Qrej0 = Qrej
             self.fan0 = fan_val
 
             tit = PC_design.get("TIT", 0.0)
@@ -57,6 +57,8 @@ class thermo_cycle_class:
                 self.Qin0 = self.Wout0 / self.eff0
 
             self.Qout0 = self.Qin0 - self.Wout0
+            self.Qout0 = self.Qin0 - self.Wout0
+            self.Qrej0 = self.Qout0 
 
         elif self.type == 'HP':
             self.Win0 = PC_design.get("Win", 0.0)

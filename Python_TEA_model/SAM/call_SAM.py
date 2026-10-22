@@ -39,7 +39,8 @@ def call_SAM(CSP, PC):
     ssccall('data_set_number', data, 'T_loop_in_des', CSP.Tmin)
     ssccall('data_set_number', data, 'T_loop_out', CSP.Tmax)
     ssccall('data_set_number', data, 'q_pb_design', PC.Qin0)
-    ssccall('data_set_number', data, 'tshours', 6)
+    #ssccall('data_set_number', data, 'tshours', 6)
+    ssccall('data_set_number', data, 'tshours', 12)
     ssccall('data_set_number', data, 'specified_solar_multiple', SM)
     ssccall('data_set_number', data, 'non_solar_field_land_area_multiplier', CSP.land_mult)
 
