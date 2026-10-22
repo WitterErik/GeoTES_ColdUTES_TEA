@@ -158,9 +158,9 @@ class geoTES_class:
         self.charge_prod_Nwell = int(np.ceil(self.charge_production.vdot * 1000.0 / self.flowrate_per_well_prod))
         # The reference model sizes every well using its production-well limit;
         # the separate injection limit is still used by pump-cost calculations.
-        self.charge_inj_Nwell = int(np.ceil(self.charge_injection.vdot * 1000.0 / self.flowrate_per_well_prod))
+        self.charge_inj_Nwell = int(np.ceil(self.charge_injection.vdot * 1000.0 / self.flowrate_per_well_inj))
         self.discharge_prod_Nwell = int(np.ceil(self.discharge_production.vdot * 1000.0 / self.flowrate_per_well_prod))
-        self.discharge_inj_Nwell = int(np.ceil(self.discharge_injection.vdot * 1000.0 / self.flowrate_per_well_prod))
+        self.discharge_inj_Nwell = int(np.ceil(self.discharge_injection.vdot * 1000.0 / self.flowrate_per_well_inj))
 
     def geoTES_annual_energy(self):
         """Calculates total annual thermal input/output energy and thermal round-trip efficiency."""

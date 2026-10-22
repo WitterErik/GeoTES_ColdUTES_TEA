@@ -32,9 +32,9 @@ def ensure_output_folder(path: Path) -> None:
 
 
 def build_operating_hours() -> tuple[tuple[int, int], tuple[int, int], tuple[int, int], np.ndarray, np.ndarray, np.ndarray]:
-    phase1 = (0, (31 + 28 + 31) * 24)
-    phase2 = (phase1[1], (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30) * 24)
-    phase3 = (phase2[1], (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31) * 24)
+    phase1 = (1, (31 + 28 + 31) * 24 + 1)
+    phase2 = (phase1[1], (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30) * 24 + 1)
+    phase3 = (phase2[1], 8761)
 
     op_hour1 = np.arange(17, 25)
     op_hour2 = np.arange(17, 24)
@@ -117,7 +117,7 @@ def main() -> None:
     gTES = geoTES_class(
         gTES_recovery,
         gTES_Tinit,
-        gTES_flowrate["P"],
+        gTES_flowrate,
         gTES_Qmax,
         gTES_props,
         gTES_fluid,
@@ -185,7 +185,7 @@ def main() -> None:
         gTES.energy[i] = gTES.energy[i - 1]
 
         hour = (i % 24) + 1
-        houry = i + 1
+        houry = (i % 8760) + 1
 
         if phase1[0] <= houry < phase1[1]:
             operate = hour in op_hour1

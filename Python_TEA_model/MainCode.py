@@ -16,7 +16,8 @@ def main():
     qload_hourly = run_dispatch(plant)
     results = calculate_costs(plant, qload_hourly)
     print_report(results)
+    return plant, qload_hourly, results
 
 
 if __name__ == "__main__":
-    main()
+    plant, qload_hourly, results = main()

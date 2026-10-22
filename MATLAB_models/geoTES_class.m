@@ -62,8 +62,8 @@ classdef geoTES_class
             obj.void = props.void;
             obj.depth = props.depth ;
             obj.thickness = props.thickness ;
-            obj.productivity = props.productivity ;
-            obj.injectivity = props.injectivity ;
+            obj.productivity = 0;%props.productivity ;
+            obj.injectivity = 0;%props.injectivity ;
 
             obj.mode = mode ;
 

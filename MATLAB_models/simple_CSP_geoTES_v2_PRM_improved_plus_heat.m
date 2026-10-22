@@ -82,6 +82,7 @@ LTPC_foff = 'data\example_off_design.xlsx' ; % File location specifying off-desi
 
 LTPC_cost.power_block = 750 ; % power block, $/kW-e
 LTPC_cost.HX = 250 ; % heat exchanger between TES and power block, $/kWh-th
+LTPC_cost.fan = 500; % air fan cost, $/kW-e
 
 % Set up high-temp power cycle class
 LTPC = thermo_cycle_class(LTPC_type,LTPC_design,LTPC_foff,LTPC_cost, nY);

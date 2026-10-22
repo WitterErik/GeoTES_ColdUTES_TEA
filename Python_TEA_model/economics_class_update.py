@@ -82,7 +82,7 @@ class economics_class:
         self.PFF = (1.0 - self.tax_rate * self.PVDEP) / (1.0 - self.tax_rate)
 
         # Construction Financing Factor (CFF)
-        # Note: Exponent adjusts to (i + 1) to replicate MATLAB's (1 to N) compounding cash flows
+        # Note: Exponent adjusts to (i + 1) - follow prior MATLAB implementation for compounding cash flows
         self.CFF = 0.0
         for i in range(len(self.annual_cost)):
             year_val = i + 1

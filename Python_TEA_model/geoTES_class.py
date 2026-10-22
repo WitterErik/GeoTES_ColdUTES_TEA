@@ -9,7 +9,14 @@ class geoTES_class:
     def __init__(self, recovery, Tinit, flowrate, Qmax, props, fluid, nY=2):
         self.recovery = float(recovery)
         self.Tinit = float(Tinit)
-        self.flowrate_per_well = float(flowrate)
+        if isinstance(flowrate, dict):
+            self.flowrate_per_well_prod = float(flowrate.get("P", flowrate.get("production", 0.0)))
+            self.flowrate_per_well_inj = float(flowrate.get("I", flowrate.get("injection", self.flowrate_per_well_prod)))
+        else:
+            self.flowrate_per_well_prod = float(flowrate)
+            self.flowrate_per_well_inj = float(flowrate)
+        # Preserve the legacy attribute for callers that use a single flow limit.
+        self.flowrate_per_well = self.flowrate_per_well_prod
         self.Qmax = float(Qmax)
         self.nY = int(nY)
 
@@ -59,14 +66,15 @@ class geoTES_class:
 
     def geoTES_well_flows(self):
         hours = 8760
-        hours2 = 2 * hours
+        hours2 = self.nY * hours
+        start = (self.nY - 1) * hours
 
         if self.charge_injection.T > self.charge_production.T:
-            max_charge_power = np.max(self.power[hours:hours2])
-            max_discharge_power = -np.min(self.power[hours:hours2])
+            max_charge_power = np.max(self.power[start:hours2])
+            max_discharge_power = -np.min(self.power[start:hours2])
         else:
-            max_charge_power = -np.min(self.power[hours:hours2])
-            max_discharge_power = np.max(self.power[hours:hours2])
+            max_charge_power = -np.min(self.power[start:hours2])
+            max_discharge_power = np.max(self.power[start:hours2])
 
         if max_charge_power == 0.0:
             self.charge_production.mdot = 0.0
@@ -93,16 +101,16 @@ class geoTES_class:
         self.discharge_production.calc_mdot_vdot("vdot")
 
         self.charge_prod_Nwell = int(
-            math.ceil(self.charge_production.vdot * 1000.0 / self.flowrate_per_well)
+            math.ceil(self.charge_production.vdot * 1000.0 / self.flowrate_per_well_prod)
         )
         self.charge_inj_Nwell = int(
-            math.ceil(self.charge_injection.vdot * 1000.0 / self.flowrate_per_well)
+            math.ceil(self.charge_injection.vdot * 1000.0 / self.flowrate_per_well_inj)
         )
         self.discharge_prod_Nwell = int(
-            math.ceil(self.discharge_production.vdot * 1000.0 / self.flowrate_per_well)
+            math.ceil(self.discharge_production.vdot * 1000.0 / self.flowrate_per_well_prod)
         )
         self.discharge_inj_Nwell = int(
-            math.ceil(self.discharge_injection.vdot * 1000.0 / self.flowrate_per_well)
+            math.ceil(self.discharge_injection.vdot * 1000.0 / self.flowrate_per_well_inj)
         )
 
         return self

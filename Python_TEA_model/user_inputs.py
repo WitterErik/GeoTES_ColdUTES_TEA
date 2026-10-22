@@ -25,14 +25,14 @@ system = {
 #  month-day definitions (non-leap year)
 jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec = 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 
-# Seasonal simulation phases (start and end hours)
+# Seasonal simulation phases use MATLAB's 1-based hour-of-year boundaries.
 phases = {
-    "phase1": [0, (jan + feb + mar) * 24],
-    "phase2": [(jan + feb + mar) * 24,
-               (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24],
+    "phase1": [1, (jan + feb + mar) * 24 + 1],
+    "phase2": [(jan + feb + mar) * 24 + 1,
+               (jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1],
     "phase3": [
-        ((jan + feb + mar + apr + may + jun + jul + aug + sep) * 24),
-        (jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec) * 24
+        ((jan + feb + mar + apr + may + jun + jul + aug + sep) * 24 + 1),
+        (jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec) * 24 + 1
     ]
 }
 

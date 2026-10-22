@@ -238,7 +238,9 @@ function out = call_SAM(CSP,PC)
 	ssccall('data_set_number', data, 'disp_csu_cost_rel', 87);
 	ssccall('data_set_number', data, 'disp_pen_ramping', 1);
 	ssccall('data_set_number', data, 'is_wlim_series', 0);
-	wlim_series = csvread( 'C:/Users/jmcti/OneDrive/Documents/GeoHybrids_2022/RTES/GeoTES_TEA/SAM/wlim_series.csv');
+	%wlim_series = csvread( 'C:/Users/jmcti/OneDrive/Documents/GeoHybrids_2022/RTES/GeoTES_TEA/SAM/wlim_series.csv');
+	%wlim_series = csvread("C:\Users\rbarney\OneDrive - NREL\Geothermal\PRM_projecg\TEA_code_MATLAB\SAM\wlim_series.csv");
+	wlim_series = csvread("C:\Users\rbarney\Documents\GitHub\GeoTES_ColdUTES_TEA\MATLAB_models\SAM\wlim_series.csv");
 	ssccall( 'data_set_array', data, 'wlim_series', wlim_series );
 	f_turb_tou_periods =[ 1.05; 1; 1; 1; 1; 1; 1; 1; 1 ];
 	ssccall( 'data_set_array', data, 'f_turb_tou_periods', f_turb_tou_periods );

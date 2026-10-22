@@ -63,7 +63,7 @@ classdef thermo_cycle_class
                 case 'HE'
                     obj.Wout0 = PC_design.Wout ;
                     obj.Tamb0 = PC_design.T0;
-                    obj.Qrej0 = PC_design.Qrej;
+                    %obj.Qrej0 = PC_design.Qrej;
                     if PC_design.TIT > 0
                         obj.Tmax  = PC_design.TIT ;
                         obj.eff0  = (1-sqrt((obj.Tamb0+273.15)/(obj.Tmax+273.15))) * 0.98 * 0.9; % Multiply by 0.98 to represent generator efficiency.Multiply by 0.9 to capture other losses.
@@ -76,6 +76,7 @@ classdef thermo_cycle_class
                         obj.Qin0 = obj.Wout0 / obj.eff0 ;
                     end
                     obj.Qout0 = obj.Qin0 - obj.Wout0 ;
+                    obj.Qrej0 = obj.Qout0 ;
                     obj.fan0 = PC_design.fan ;
 
                 case 'HP'
@@ -94,6 +95,7 @@ classdef thermo_cycle_class
                         obj.Qout0 = obj.Win0 * obj.COP0 ;
                     end
                     obj.Qin0 = obj.Qout0 - obj.Win0 ;
+                    obj.Qrej0 = obj.Qout0 ;
                     obj.fan0 = PC_design.fan ;
 
             end

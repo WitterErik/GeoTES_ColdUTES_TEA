@@ -45,7 +45,9 @@ class thermo_cycle_class:
 
             if tit > 0:
                 self.Tmax = tit
-                self.eff0 = 1.0 - np.sqrt((self.Tamb0 + 273.15) / (self.Tmax + 273.15))
+                self.eff0 = (
+                    1.0 - np.sqrt((self.Tamb0 + 273.15) / (self.Tmax + 273.15))
+                ) * 0.98 * 0.9
                 self.Qin0 = self.Wout0 / self.eff0
             elif qin > 0:
                 self.Qin0 = qin
@@ -112,7 +114,7 @@ class thermo_cycle_class:
         # Extract dependent payload matrix (Z-axis variables to interpolate)
         self.Z_payload = off_data[1:nrow, 1:ncol]
 
-        # Create Meshgrids matching MATLAB arrangements
+        # Create Meshgrids matching original MATLAB arrangements
         self.T0_off, self.Qin_off = np.meshgrid(self.T0_axes, self.y_axes)
         
         if self.type == 'HE':
@@ -161,8 +163,6 @@ class thermo_cycle_class:
             if y_req <= 0:
                 self.Wout[i] = 0.0
             else:
-                y_req = np.clip(y_req, self.y_axes[0], self.y_axes[-1])
-                x_req = np.clip(x_req, self.T0_axes[0], self.T0_axes[-1])
                 # RectBivariateSpline takes inputs as: solver(y, x)
                 # We extract the scalar element using [0][0]
                 interpolated_fraction = self.spline_solver(y_req, x_req)[0][0]
@@ -173,8 +173,6 @@ class thermo_cycle_class:
             if y_req <= 0:
                 self.Qout[i] = 0.0
             else:
-                y_req = np.clip(y_req, self.y_axes[0], self.y_axes[-1])
-                x_req = np.clip(x_req, self.T0_axes[0], self.T0_axes[-1])
                 interpolated_fraction = self.spline_solver(y_req, x_req)[0][0]
                 self.Qout[i] = self.Qout0 * interpolated_fraction
 
@@ -182,13 +180,11 @@ class thermo_cycle_class:
         """Calculates component-level Capital expenditures ($) of the Power Cycle."""
         if self.type == 'HE':
             self.power_block_cost = self.power_block_cost_unit * self.Wout0 * 1000.0
-            hx_quantity = self.Qrej0 if self.Qrej0 > 0.0 else self.Qout0
-            self.HX_cost = self.HX_cost_unit * hx_quantity * 1000.0
+            self.HX_cost = self.HX_cost_unit * self.Qrej0 * 1000.0
             self.fan_cost = self.fan_cost_unit * self.fan0 * self.Wout0 * 1000.0
         elif self.type == 'HP':
             self.power_block_cost = self.power_block_cost_unit * self.Win0 * 1000.0
-            hx_quantity = self.Qrej0 if self.Qrej0 > 0.0 else self.Qout0
-            self.HX_cost = self.HX_cost_unit * hx_quantity * 1000.0
+            self.HX_cost = self.HX_cost_unit * self.Qrej0 * 1000.0
             self.fan_cost = self.fan_cost_unit * self.fan0 * self.Win0 * 1000.0
 
         self.total_cost = self.power_block_cost + self.HX_cost + self.fan_cost

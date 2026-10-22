@@ -61,7 +61,9 @@ class thermo_cycle_class:
             self.Wout0 = float(get("Wout"))
             if float(get("TIT", 0.0)) > 0.0:
                 self.Tmax = float(get("TIT"))
-                self.eff0 = 1.0 - math.sqrt((self.Tamb0 + 273.15) / (self.Tmax + 273.15))
+                self.eff0 = (
+                    1.0 - math.sqrt((self.Tamb0 + 273.15) / (self.Tmax + 273.15))
+                ) * 0.98 * 0.9
                 self.Qin0 = self.Wout0 / self.eff0
             elif float(get("Qin", 0.0)) > 0.0:
                 self.Qin0 = float(get("Qin"))
@@ -139,7 +141,9 @@ class thermo_cycle_class:
             )
 
     def PC_annual_energy(self):
-        n = np.arange(8760, 2 * 8760)
+        start = (self.nY - 1) * 8760
+        end = self.nY * 8760
+        n = np.arange(start, end)
 
         if self.type == "HE":
             self.Qin_tot = float(np.sum(self.Qin[n]) / 1000.0)
@@ -162,16 +166,12 @@ class thermo_cycle_class:
             if y_req <= 0.0:
                 self.Wout[i] = 0.0
             else:
-                y_req = np.clip(y_req, self.Qin_off[0], self.Qin_off[-1])
-                x_req = np.clip(x_req, self.T0_off[0], self.T0_off[-1])
                 self.Wout[i] = float(self.Wout_off_interp(y_req, x_req)) * self.Wout0
         elif self.type == "HP":
             y_req = float(self.Win[i] / self.Win0)
             if y_req <= 0.0:
                 self.Qout[i] = 0.0
             else:
-                y_req = np.clip(y_req, self.Win_off[0], self.Win_off[-1])
-                x_req = np.clip(x_req, self.T0_off[0], self.T0_off[-1])
                 self.Qout[i] = float(self._off_interp(y_req, x_req)[0, 0]) * self.Qout0
         else:
             raise ValueError(f"Unsupported cycle type: {self.type}")
@@ -181,13 +181,11 @@ class thermo_cycle_class:
     def calc_PC_cost(self):
         if self.type == "HE":
             self.power_block_cost = self.power_block_cost_unit * self.Wout0 * 1000.0
-            hx_quantity = self.Qrej0 if self.Qrej0 > 0.0 else self.Qout0
-            self.HX_cost = self.HX_cost_unit * hx_quantity * 1000.0
+            self.HX_cost = self.HX_cost_unit * self.Qrej0 * 1000.0
             self.fan_cost = self.fan_cost_unit * self.fan0 * self.Wout0 * 1000.0
         elif self.type == "HP":
             self.power_block_cost = self.power_block_cost_unit * self.Win0 * 1000.0
-            hx_quantity = self.Qrej0 if self.Qrej0 > 0.0 else self.Qout0
-            self.HX_cost = self.HX_cost_unit * hx_quantity * 1000.0
+            self.HX_cost = self.HX_cost_unit * self.Qrej0 * 1000.0
             self.fan_cost = self.fan_cost_unit * self.fan0 * self.Win0 * 1000.0
         else:
             raise ValueError(f"Unsupported cycle type: {self.type}")
