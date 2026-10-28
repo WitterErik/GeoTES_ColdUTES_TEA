@@ -1,6 +1,16 @@
 """Formatting and printing of annual CSP–GeoTES model results."""
 
+from contextlib import redirect_stdout
+from datetime import datetime
+import io
+import json
+from pathlib import Path
+
 import numpy as np
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+
+import user_inputs
 
 
 def print_report(results):
@@ -55,6 +65,30 @@ def print_report(results):
     print(f"Number of discharging production wells    = {geotes.discharge_prod_Nwell:6.2f}")
     print(f"Number of discharging injection wells     = {geotes.discharge_inj_Nwell:6.2f}\n")
 
+    square_meters_per_acre = 4046.8564224
+    solar_acres = csp.land_area / square_meters_per_acre
+    print("\nAREA ESTIMATES AND ASSUMPTIONS\n")
+    print(f"Solar field land area estimate            = {solar_acres:6.2f} acres")
+    print(f"  Land area = mirror aperture area x {csp.land_mult:g}, converted from m2 to acres.")
+    print("  Uses the Python SAM wrapper's aperture-based estimate, not a SAM land-area output.")
+    print("  Row spacing, roads, setbacks and infrastructure are not explicitly sized;")
+    print("  their allowance is represented only by the land multiplier.")
+    if geotes.thickness > 0:
+        geotes_acres = geotes.volume / geotes.thickness / square_meters_per_acre
+        print(f"GeoTES subsurface footprint estimate      = {geotes_acres:6.2f} acres")
+    else:
+        print("GeoTES subsurface footprint estimate      = N/A (requires positive thickness)")
+    temperature_difference = abs(geotes.charge_injection.T - geotes.charge_production.T)
+    print(f"  Footprint = reservoir bulk volume / thickness ({geotes.thickness:g} m), converted to acres.")
+    print("  Volume uses final-year maximum stored energy and rock sensible heat:")
+    print("  V = E_max / [rho_rock x cp_rock x (1 - porosity) x temperature difference].")
+    print(f"  rho_rock = {geotes.rho:g} kg/m3; cp_rock = {geotes.cp:g} J/(kg K);")
+    print(f"  porosity = {geotes.void:g}; temperature difference = {temperature_difference:g} C.")
+    print("  Assumes uniform use of the full thickness and temperature range;")
+    print("  excludes pore-water heat capacity, thermal sweep and well-spacing constraints.")
+    print("  GeoTES acreage is not surface land required for wells or infrastructure.")
+    print("  Solar and GeoTES areas are not added; their footprints may overlap.\n")
+
     print("\nSUBSURFACE COST RESULTS\n")
     print(f"Total Exploration Cost          = {results.exploration_cost / 1e6:6.2f} M$")
     print(f"Permitting cost                 = {results.permitting_cost / 1e6:6.2f} M$\n")
@@ -87,3 +121,53 @@ def print_report(results):
     print(f"LCOE (ITC)                      = {econ.LCOE_ITC:6.3f} $/kWh-e")
     print(f"LCOH (ITC)                      = {econ.LCOH_ITC:6.3f} $/kWh-th")
     print(f"GeoTES contribution to LCOE (ITC) = {results.geotes_lcoe_itc:6.3f} $/kWh-e\n")
+
+
+def export_report(results, output_dir):
+    """Save the console report and model inputs to a timestamped Excel workbook."""
+    report_buffer = io.StringIO()
+    with redirect_stdout(report_buffer):
+        print_report(results)
+
+    workbook = Workbook()
+    report_sheet = workbook.active
+    report_sheet.title = "Report"
+    report_sheet.column_dimensions["A"].width = 110
+    for line in report_buffer.getvalue().splitlines():
+        cell = report_sheet.cell(row=report_sheet.max_row + 1, column=1, value=line)
+        cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    input_sheet = workbook.create_sheet("Run Inputs")
+    input_sheet.append(["Section", "Parameter", "Value"])
+    for cell in input_sheet[1]:
+        cell.font = Font(bold=True)
+
+    input_sections = (
+        "system", "phases", "operating_hours", "csp_specs", "csp_costs",
+        "ltpc_type", "ltpc_design", "ltpc_costs", "gtes_settings", "qload",
+        "reversible_wells", "gtes_flowrate", "gtes_props", "finance",
+        "finance_baseline_offsets", "exploration_specs", "engineering",
+    )
+    for section_name in input_sections:
+        section_value = getattr(user_inputs, section_name)
+        if isinstance(section_value, dict):
+            for parameter, value in section_value.items():
+                input_sheet.append(
+                    [section_name, parameter, json.dumps(value, default=str)]
+                )
+        else:
+            input_sheet.append(
+                [section_name, section_name, json.dumps(section_value, default=str)]
+            )
+
+    input_sheet.freeze_panes = "A2"
+    input_sheet.auto_filter.ref = input_sheet.dimensions
+    input_sheet.column_dimensions["A"].width = 26
+    input_sheet.column_dimensions["B"].width = 30
+    input_sheet.column_dimensions["C"].width = 70
+
+    output_path = Path(output_dir) / (
+        f"GeoTES_TEA_report_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
+    )
+    workbook.save(output_path)
+    return output_path

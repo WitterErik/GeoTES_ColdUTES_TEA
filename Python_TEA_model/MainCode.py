@@ -4,7 +4,7 @@ import user_inputs
 from plant_setup import initialize_plant
 from plant_dispatch import run_dispatch
 from plant_costing import calculate_costs
-from plant_report import print_report
+from plant_report import export_report, print_report
 
 
 def main():
@@ -16,6 +16,8 @@ def main():
     qload_hourly = run_dispatch(plant)
     results = calculate_costs(plant, qload_hourly)
     print_report(results)
+    report_path = export_report(results, user_inputs.output_dir)
+    print(f"Excel report exported to: {report_path}")
     return plant, qload_hourly, results
 
 

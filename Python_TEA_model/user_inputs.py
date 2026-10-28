@@ -100,8 +100,8 @@ qload = 200.0  # Thermal load, MW-th
 
 # define the production and injection flow rates in L/s
 gtes_flowrate = {
-    "production" : 40,
-    "injection" : 80
+    "production" : 80,
+    "injection" : 40
 }
 
 gtes_props = {
