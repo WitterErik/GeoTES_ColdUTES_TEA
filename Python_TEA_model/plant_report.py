@@ -6,11 +6,124 @@ import io
 import json
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
 import user_inputs
+
+
+def export_figures(results, qload_hourly, output_dir):
+    """Save economic, storage, and dispatch figures for the completed run."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    plant = results.plant
+    csp, cycle, geotes, econ = (
+        plant.csp,
+        plant.power_cycle,
+        plant.geotes,
+        plant.economics,
+    )
+    capital_costs = np.array([
+        results.exploration_cost,
+        results.permitting_cost,
+        results.charge_drill_prod + results.charge_drill_inj,
+        results.charge_prod_duty[1],
+        results.charge_inj_duty[1],
+        results.charge_flowline,
+        results.discharge_drill_prod + results.discharge_drill_inj,
+        results.discharge_prod_duty[1],
+        results.discharge_inj_duty[1],
+        results.discharge_flowline,
+        csp.total_cost,
+        cycle.total_cost,
+    ]) / 1e6
+    capital_labels = [
+        "Exploration",
+        "Permitting",
+        "Charge drilling",
+        "Charge production pumps",
+        "Charge injection pump",
+        "Charge flow line",
+        "Discharge drilling",
+        "Discharge production pumps",
+        "Discharge injection pump",
+        "Discharge flow line",
+        "CSP",
+        "Low-temp. power cycle",
+    ]
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.bar(np.arange(len(capital_costs)), capital_costs)
+    ax.set_xticks(np.arange(len(capital_labels)))
+    ax.set_xticklabels(capital_labels, rotation=45, ha="right")
+    ax.set_ylabel("Capital cost, M$")
+    ax.set_title("Capital cost breakdown")
+    fig.tight_layout()
+    fig.savefig(output_dir / "capital_cost.png", dpi=300)
+    plt.close(fig)
+
+    lcoe_contributions = np.concatenate((
+        capital_costs * econ.FCR,
+        np.array([econ.OnM_subsurface, econ.OnM_surface]) / 1e6,
+    )) / econ.Eout
+    lcoe_labels = capital_labels + ["Subsurface O&M", "Surface O&M"]
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.bar(np.arange(len(lcoe_contributions)), lcoe_contributions)
+    ax.set_xticks(np.arange(len(lcoe_labels)))
+    ax.set_xticklabels(lcoe_labels, rotation=45, ha="right")
+    ax.set_ylabel("LCOE, $/kWh-e")
+    ax.set_title("LCOE contribution breakdown")
+    fig.tight_layout()
+    fig.savefig(output_dir / "LCOE.png", dpi=300)
+    plt.close(fig)
+
+    year_start, year_end = results.year_start, results.year_end
+    year_hours = np.arange(year_end - year_start)
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.plot(year_hours, geotes.energy[year_start:year_end] / 1000)
+    ax.set_xlim(0, len(year_hours))
+    ax.set_title("Energy in geoTES")
+    ax.set_xlabel("Hour of the year")
+    ax.set_ylabel("Energy in geoTES, GWh-th")
+    fig.tight_layout()
+    fig.savefig(output_dir / "geoTES_SOC.png", dpi=300)
+    plt.close(fig)
+
+    def save_dispatch_window(filename, title, first_day, last_day):
+        start = year_start + 24 * first_day
+        end = min(year_start + 24 * last_day, year_end)
+        hours = np.arange(end - start)
+        fig, ax = plt.subplots(figsize=(14, 6))
+        ax.plot(hours, csp.power[start:end], label="Solar heat")
+        ax.plot(hours, geotes.power[start:end], label="Heat to geoTES")
+        ax.plot(hours, cycle.Qin[start:end], label="Heat to power cycle")
+        ax.plot(hours, qload_hourly[start:end], label="Heat delivered to load")
+        ax.set_title(title)
+        ax.set_xlabel("Hour")
+        ax.set_ylabel("Heat, MWh-th")
+        ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.3), ncol=2)
+        fig.tight_layout()
+        fig.savefig(output_dir / filename, dpi=300)
+        plt.close(fig)
+
+    save_dispatch_window("January_power_flows.png", "January 27", 26, 30)
+    august_1 = datetime(2021, 8, 1).timetuple().tm_yday - 1
+    august_4 = datetime(2021, 8, 4).timetuple().tm_yday - 1
+    save_dispatch_window("August_power_flows.png", "August 4", august_1, august_4)
+
+    return [
+        output_dir / filename
+        for filename in (
+            "capital_cost.png",
+            "LCOE.png",
+            "geoTES_SOC.png",
+            "January_power_flows.png",
+            "August_power_flows.png",
+        )
+    ]
 
 
 def print_report(results):
