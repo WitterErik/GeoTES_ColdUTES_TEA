@@ -19,6 +19,8 @@ def main():
     if user_inputs.system["save_figs"]:
         figure_paths = export_figures(results, qload_hourly, user_inputs.output_dir)
         print(f"Figures exported to: {user_inputs.output_dir} ({len(figure_paths)} files)")
+    else:
+        print("Figure export disabled (user_inputs.system['save_figs'] is False).")
     report_path = export_report(results, user_inputs.output_dir)
     print(f"Excel report exported to: {report_path}")
     return plant, qload_hourly, results
