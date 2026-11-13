@@ -47,6 +47,11 @@ def day_of_year(year: int, month: int, day: int) -> int:
     return datetime.date(year, month, day).timetuple().tm_yday
 
 
+def get_year_slice_indices(nY: int) -> tuple[int, int]:
+    hours = 8760
+    return (nY - 1) * hours, nY * hours
+
+
 def year_slice(nY: int) -> slice:
     hours = 8760
     return slice((nY - 1) * hours, nY * hours)
@@ -251,7 +256,7 @@ def main() -> None:
     LTPC.calc_PC_cost()
 
     Exploration_Cost = ExplorationCost("Greenfield", 3, 20000, 1.2)
-    Total_Exploration_Cost = Exploration_Cost.ExplorationCostCalc()
+    Total_Exploration_Cost = Exploration_Cost.exploration_cost_calc()
 
     PPImultiplier = 1.175
     FieldDevPlantPermitting = 1_000_000.0 * PPImultiplier
@@ -299,13 +304,13 @@ def main() -> None:
             "Liner",
             1.553,
         )
-        Step1 = Charge_ProdPumping_Estimation.HeadProdTop()
-        Step2 = Charge_ProdPumping_Estimation.HeadSunction(Step1.Prodtop)
-        Step3 = Charge_ProdPumping_Estimation.Sunctiondepth(Step2)
-        Step4 = Charge_ProdPumping_Estimation.CasingFriction(Step3, Step1.Prodtop)
-        Step5 = Charge_ProdPumping_Estimation.Pumppower(Step3, Step4)
-        Step6 = Charge_ProdPumping_Estimation.Pumpcost(Step5, Step3)
-        Charge_ProdPumping_Cost_Duty = Charge_ProdPumping_Estimation.TotalPumpDutyCost(Step5, Step6)
+        Step1 = Charge_ProdPumping_Estimation.head_prod_top()
+        Step2 = Charge_ProdPumping_Estimation.head_suction(Step1)
+        Step3 = Charge_ProdPumping_Estimation.suction_depth(Step2)
+        Step4 = Charge_ProdPumping_Estimation.casing_friction(Step3, Step1)
+        Step5 = Charge_ProdPumping_Estimation.pump_power(Step3, Step4)
+        Step6 = Charge_ProdPumping_Estimation.pump_cost(Step5, Step3)
+        Charge_ProdPumping_Cost_Duty = Charge_ProdPumping_Estimation.total_pump_duty_cost(Step5, Step6)
 
         InjTemp = LTPC.Tmax
         Iflowrate = gTES.flowrate_per_well_inj * gTES.charge_injection.rho / 1000.0
@@ -325,11 +330,11 @@ def main() -> None:
             1.533,
             "Charge",
         )
-        Step7 = Charge_InjPumping_Estimation.HeadSunction()
-        Step8 = Charge_InjPumping_Estimation.HeadInjection(Step7)
-        Step9 = Charge_InjPumping_Estimation.Pumppower(Step8)
-        Step10 = Charge_InjPumping_Estimation.Pumpcost(Step9)
-        Charge_InjPumping_Cost_Duty = Charge_InjPumping_Estimation.TotalPumpDutyCost(Step9, Step10)
+        Step7 = Charge_InjPumping_Estimation.head_suction()
+        Step8 = Charge_InjPumping_Estimation.head_injection(Step7)
+        Step9 = Charge_InjPumping_Estimation.pump_power(Step8)
+        Step10 = Charge_InjPumping_Estimation.pump_cost(Step9)
+        Charge_InjPumping_Cost_Duty = Charge_InjPumping_Estimation.total_pump_duty_cost(Step9, Step10)
 
         LengthofFlowline = 300.0
         PipingUnitCost = 256.98
@@ -341,7 +346,7 @@ def main() -> None:
             + Total_Charge_Drilling_Cost_inj
             + Charge_FlowLineCost
         )
-        Charge_PumpMaintenance = Charge_ProdPumping_Estimation.PumpMaintenanceCost(Step3, Step6)
+        Charge_PumpMaintenance = Charge_ProdPumping_Estimation.pump_maintenance_cost(Step3, Step6)
 
         OilSaturation = 0.0
         NumberProductionWells = gTES.charge_prod_Nwell
@@ -412,13 +417,13 @@ def main() -> None:
         "Liner",
         1.553,
     )
-    Step1 = Discharge_ProdPumping_Estimation.HeadProdTop()
-    Step2 = Discharge_ProdPumping_Estimation.HeadSunction(Step1.Prodtop)
-    Step3 = Discharge_ProdPumping_Estimation.Sunctiondepth(Step2)
-    Step4 = Discharge_ProdPumping_Estimation.CasingFriction(Step3, Step1.Prodtop)
-    Step5 = Discharge_ProdPumping_Estimation.Pumppower(Step3, Step4)
-    Step6 = Discharge_ProdPumping_Estimation.Pumpcost(Step5, Step3)
-    Discharge_ProdPumping_Cost_Duty = Discharge_ProdPumping_Estimation.TotalPumpDutyCost(Step5, Step6)
+    Step1 = Discharge_ProdPumping_Estimation.head_prod_top()
+    Step2 = Discharge_ProdPumping_Estimation.head_suction(Step1)
+    Step3 = Discharge_ProdPumping_Estimation.suction_depth(Step2)
+    Step4 = Discharge_ProdPumping_Estimation.casing_friction(Step3, Step1)
+    Step5 = Discharge_ProdPumping_Estimation.pump_power(Step3, Step4)
+    Step6 = Discharge_ProdPumping_Estimation.pump_cost(Step5, Step3)
+    Discharge_ProdPumping_Cost_Duty = Discharge_ProdPumping_Estimation.total_pump_duty_cost(Step5, Step6)
 
     InjTemp = gTES.Tinit
     Iflowrate = gTES.flowrate_per_well_inj * gTES.discharge_injection.rho / 1000.0
@@ -438,11 +443,11 @@ def main() -> None:
         1.533,
         "Discharge",
     )
-    Step7 = Discharge_InjPumping_Estimation.HeadSunction()
-    Step8 = Discharge_InjPumping_Estimation.HeadInjection(Step7)
-    Step9 = Discharge_InjPumping_Estimation.Pumppower(Step8)
-    Step10 = Discharge_InjPumping_Estimation.Pumpcost(Step9)
-    Discharge_InjPumping_Cost_Duty = Discharge_InjPumping_Estimation.TotalPumpDutyCost(Step9, Step10)
+    Step7 = Discharge_InjPumping_Estimation.head_suction()
+    Step8 = Discharge_InjPumping_Estimation.head_injection(Step7)
+    Step9 = Discharge_InjPumping_Estimation.pump_power(Step8)
+    Step10 = Discharge_InjPumping_Estimation.pump_cost(Step9)
+    Discharge_InjPumping_Cost_Duty = Discharge_InjPumping_Estimation.total_pump_duty_cost(Step9, Step10)
     if reversible_wells:
         Discharge_InjPumping_Cost_Duty = np.array([0.0, 0.0])
 
@@ -458,7 +463,7 @@ def main() -> None:
         + Total_Discharge_Drilling_Cost_inj
         + Discharge_FlowLineCost
     )
-    Discharge_PumpMaintenance = Discharge_ProdPumping_Estimation.PumpMaintenanceCost(Step3, Step6)
+    Discharge_PumpMaintenance = Discharge_ProdPumping_Estimation.pump_maintenance_cost(Step3, Step6)
 
     OilSaturation = 0.0
     NumberProductionWells = gTES.discharge_prod_Nwell
@@ -503,7 +508,7 @@ def main() -> None:
     econ.subsurface_capital_cost = SubsurfaceCapitalCost
     econ.OnM_subsurface = SubsurfaceOandMCost
 
-    last_year = year_slice(nY)
+    last_year = slice(*get_year_slice_indices(nY))
     charging_hours = int(np.count_nonzero(gTES.power[last_year] > 0.0))
     discharging_hours = int(np.count_nonzero(gTES.power[last_year] < 0.0))
 
@@ -711,7 +716,7 @@ def main() -> None:
         save_figure(fig, output_dir / "LCOE", formats)
 
     fig = plt.figure(3)
-    hours = np.arange(*year_slice(nY))
+    hours = np.arange(*get_year_slice_indices(nY))
     plt.plot(hours, gTES.energy[year_slice(nY)] / 1000.0)
     plt.xlim([0, 8760])
     plt.gca().set_aspect(3.0, adjustable="box")
